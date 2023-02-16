@@ -1,0 +1,13 @@
+{
+    "type": "service_account",
+    "project_id": "bot-nita-yyhg",
+    "private_key_id": "fe0c6e3ca7df0c46a6a4454f3f08d70ab8605453",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC/DFLX+D7/KgpZ\nfsbGetIppCGAsqTr95hsDF2Cx7NXDvlZcxcYh6pneUiiN6iXqvyidGjqgknz5NBw\nbQz0ihiPn+/IET46HyZd/mlrxLsgXGmJ7+vQ2Gkrtul6S+IlrVSfFKm4Ll+aDxy1\nkXOv/aOLyGWLscZEgEEhByemAquVeNWnIKyW1YT3Ql1Uqrekx4DvNlxe9JiT2ner\nKKgXZghAIqvIx/vNhEELH3997PjWyvTlSiQlKFPaTfrxCBQy1Sdv1xi35e+AO+UY\nu/w7Bfb1wuTfrkibnQsr1SzFtpJventq2cm17cn3OjK4mPs/qiwXz/mI711++C1a\nzCkaO2HZAgMBAAECggEAAccW2eOcXhcYmY7EzOqLSs/mtblQ6nQXWBWspLbjWzo1\nK2eLer6W+Gvg2ju/cSEeit0rKdfTEFakuGzob2hDu7JlSeEcSU1wLCNd5ZMusdg1\n7WAbmInlJ+e0LHbJBndFVZQoXq1HD+kDXHdVpspNxF7YoZdoblcb5vGu06xDakj9\nb4XfnOsdeWXx2U3oZFOl4rE23Po0xKv4eXvVACBczivEp6tfcTx7HODFX8+d570l\nFYjDD0Wbm+x/2Xt7f0HgjkHDvkJw5IUD33X83bV6gqT0pAtGBXuIF72MRJFRgXdk\ndSA30kdBaKIulnd3PuB6dwGHOPaxUESKyuo1dn2A8QKBgQDm/FJFp6d5+BaSgFZJ\nfXQbxHLJKM80bBuLgdxgLWISZ+rMW/5RjFzRV7bFJ3kJ/0KIKCcRDd9KUeK4QE6K\nH41n/pyvWDxVEjFuZ/UdSu7755yQNn5OLDLHq6XH9bltttPce+id0Z8Swqu6gqso\ngB4MK3biE+5r4CY0Ga9aoIkGUwKBgQDTvM3ZUiziyTkVfKf7pC37dtum5lE7txUm\nBGE4XGQy6ToyjUqSfXwDNEwm73Qg4KIHx1pkIsJomooJ/Lirk9knCavBv/xkXm6+\nsiIFOoQwR552va3QSm58vwARVroFesEjXyoE1Uboti21dS5wrVhFFPTuam4NE5Wc\nqz6JfODZowKBgAGZoeBFpw1bQJzHMtHTgqhmlfz6wWS1kwNGZQZtig5ilefQg1SB\nSmtQ1j1LZrVBBW74CD1AAVn8czufhmvCiDI+O0ujqtdUBu+i3LnVOQ6ZriX5mqpj\n9/4WHFHkS+KMr68JVLUzLIzuuE3UdecT7CFdc7dhN/ebV+hofSR9lDVtAoGBAIzt\niYUv8LgxflES2yveJszMW35GpaK9RNI88Ah3VimcmiOzbwL5imUHlfgEQKLxYGcV\nBNDJYeQFmAL1tmRcz5fwE+WtRuv2/nbmUUZxoDISOSKHNP0BzXAyIHVp5/5lqc9F\nM85rtfqF5v5ztClC9xFj1XIqXH1Pn7DbOZCBEZdJAoGBAM+QHQ3zDdV26nPnQ62N\nSuvd9OwvOitSsZPbQRCwJqYKXstW8fzQzF25aJ9sOG50lvqfPt6wXiB1koWHcQls\nfXXTF3ZGOt+su9K/RJ5OXMKa0HiCHqTReMHWhxVR0rCCmZtBCazv6L7fJlpDz1l8\niwnuCQmDmOouJsEAAhmCHsiw\n-----END PRIVATE KEY-----\n",
+    "client_email": "nita-bot@bot-nita-yyhg.iam.gserviceaccount.com",
+    "client_id": "111794036434354193808",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/nita-bot%40bot-nita-yyhg.iam.gserviceaccount.com"
+  }
+  

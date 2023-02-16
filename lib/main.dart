@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app_launcher/app_launcher.dart';
 import 'package:flutter_background_service/flutter_background_service.dart'
     show
         AndroidConfiguration,
@@ -8,16 +9,17 @@ import 'package:flutter_background_service/flutter_background_service.dart'
         ServiceInstance;
         
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'background_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:dialog_flowtter/dialog_flowtter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await initializeService();
-
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatefulWidget {
   const MyApp({
@@ -28,12 +30,25 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
+
+
 class _MyAppState extends State<MyApp> {
+
+  late DialogFlowtter dialogFlowtter;
+  final TextEditingController _controller = TextEditingController();
+  final flutterTts = FlutterTts();
+
   String text = "Stop Service";
+
+
+  @override
+  void initState() {
+    DialogFlowtter.fromFile().then((instance) => dialogFlowtter = instance);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-   // Size size = MediaQuery.of(context).size;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
@@ -43,27 +58,28 @@ class _MyAppState extends State<MyApp> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               //for listen Continuous change in foreground we will be using Stream builder
-              StreamBuilder<Map<String, dynamic>?>(
-                  stream: FlutterBackgroundService().on('update'),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                    final data = snapshot.data!;
-                    int? counter = data["counter"];
-                    DateTime? date = DateTime.tryParse(data["current_date"]);
-                    return Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Counter => $counter'),
-                          Text(date.toString()),
-                        ],
-                      ),
-                    );
-                  }),
+              // StreamBuilder<Map<String, dynamic>?>(
+              //   stream: FlutterBackgroundService().on('update'),
+              //   builder: (context, snapshot) {
+              //     if (!snapshot.hasData) {
+              //       return const Center(
+              //         child: CircularProgressIndicator(),
+              //       );
+              //     }
+              //     final data = snapshot.data!;
+              //     int? counter = data["counter"];
+              //     DateTime? date = DateTime.tryParse(data["current_date"]);
+              //     return Expanded(
+              //       child: Column(
+              //         mainAxisAlignment: MainAxisAlignment.center,
+              //         children: [
+              //           Text('Counter => $counter'),
+              //           Text(date.toString()),
+              //         ],
+              //       ),
+              //     );
+              //   }
+              // ),
               Expanded(
                 child: Container( 
                   width: double.infinity,
@@ -73,7 +89,6 @@ class _MyAppState extends State<MyApp> {
                     "NITA",
                     style: TextStyle(
                       fontSize: 100,
-                      //color: Colors.amber,
                       foreground: Paint()
                         ..style = PaintingStyle.stroke
                         ..strokeWidth = 11
@@ -95,119 +110,59 @@ class _MyAppState extends State<MyApp> {
                   height: 100,
                 ),
               ),
-              // Padding(
-              //   padding: const EdgeInsets.all(8.0),
-              //   child: GestureDetector(
-              //     child: Container(
-              //         padding: const EdgeInsets.symmetric(
-              //             vertical: 10, horizontal: 20),
-              //         decoration: BoxDecoration(
-              //             color: Colors.blueAccent,
-              //             borderRadius: BorderRadius.circular(16)),
-              //         child: const Text(
-              //           "Foreground Mode",
-              //           style: TextStyle(color: Colors.white),
-              //         )),
-              //     onTap: () {
-              //       FlutterBackgroundService().invoke("setAsForeground");
-              //     },
-              //   ),
-              // ),
-              // Padding(
-              //   padding: const EdgeInsets.all(8.0),
-              //   child: GestureDetector(
-              //     child: Container(
-              //         padding: const EdgeInsets.symmetric(
-              //             vertical: 10, horizontal: 20),
-              //         decoration: BoxDecoration(
-              //             color: Colors.blueAccent,
-              //             borderRadius: BorderRadius.circular(16)),
-              //         child: const Text(
-              //           "Background Mode",
-              //           style: TextStyle(color: Colors.white),
-              //         )),
-              //     onTap: () {
-              //       print('start');
-              //       FlutterBackgroundService().invoke("setAsBackground");
-              //     },
-              //   ),
-              // ),
-              // Padding(
-              //   padding: const EdgeInsets.all(8.0),
-              //   child: GestureDetector(
-              //     child: Container(
-              //       padding: const EdgeInsets.symmetric(
-              //           vertical: 10, horizontal: 20),
-              //       decoration: BoxDecoration(
-              //           color: Colors.blueAccent,
-              //           borderRadius: BorderRadius.circular(16)),
-              //       child: Text(
-              //         text,
-              //         style: const TextStyle(color: Colors.white),
-              //       ),
-              //     ),
-              //     onTap: () async {
-              //       final service = FlutterBackgroundService();
-              //       // final service = widget.appStateService.service;
-              //       var isRunning = await service.isRunning();
-              //       if (isRunning) {
-              //         service.invoke("stopService");
-              //       } else {
-              //         service.startService();
-              //       }
 
-              //       if (!isRunning) {
-              //         text = 'Stop Service';
-              //       } else {
-              //         text = 'Start Service';
-              //       }
-              //       setState(() {});
-              //     },
-              //   ),
-              // ),
+
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                color: Colors.deepPurple,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        style: TextStyle(color: Colors.white),
+                      )
+                    ),
+                    IconButton(
+                        onPressed: () {
+                          sendMessage(_controller.text);
+                          _controller.clear();
+                        },
+                        icon: Icon(Icons.send)
+                    )
+                  ],
+                ),
+              )
+
+              
             ],
           ),
         ),
       ),
     );
   }
-}
 
 
 
+  sendMessage(String text) async { //toma el "text" y lo envia a dialogflow
+    if (text.isEmpty) {
+      print('Message esta vacio');
+    } else {
 
-/*
-import 'package:flutter/material.dart';
-import 'package:flutter_nita/welcome_page.dart';
+      DetectIntentResponse response = await dialogFlowtter.detectIntent(
+          queryInput: QueryInput(text: TextInput(text: text))
+      );//aqui devuelve la respuesta de dialogflow hacia flutter
 
-void main() {
-  runApp(const MyApp());
-}
+      String? action = response.queryResult!.action; //el nombre de la accion
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+      if (response.message == null) return;
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: Colors.white,
-      ),
-      home: WelcomePage(),
+      String msg = response.message!.text!.text![0];
+      speak(msg); 
+    }
+  }
 
-    );
-    // return MaterialApp(
-    //   title: 'Flutter Demo',
-    //   theme: ThemeData(
-    //     primaryColor: Colors.white,
-    //     // primarySwatch: Colors.blue,
-    //   ),
-    //   home: const WelcomePage(),
-    // );
+  void speak(String text) {
+    flutterTts.speak(text);
   }
 }
-*/
-
-

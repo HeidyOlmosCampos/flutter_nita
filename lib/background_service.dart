@@ -1,8 +1,9 @@
 import 'dart:ui';
 import 'dart:async';
+import 'package:app_launcher/app_launcher.dart';
 import 'package:flutter/material.dart';
 
-import 'package:flutter_sensors/flutter_sensors.dart';
+// import 'package:flutter_sensors/flutter_sensors.dart';
 
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 
@@ -12,12 +13,17 @@ import 'package:flutter_background_service/flutter_background_service.dart'
         FlutterBackgroundService,
         IosConfiguration,
         ServiceInstance;
+
+import 'package:flutter_nita/acelerometer.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shake/shake.dart';
 
 final service = FlutterBackgroundService();
 final flutterTts = FlutterTts();
-ShakeDetector? detector;
+
+// ShakeDetector? detector;
+AccelerometerDetector? acDetector;
+
 int _counter = 0;
 
 Future initializeService() async {
@@ -42,7 +48,7 @@ Future initializeService() async {
 
 bool onIosBackground(ServiceInstance service) {
   WidgetsFlutterBinding.ensureInitialized();
-  print('FLUTTER BACKGROUND FETCH');
+  // print('FLUTTER BACKGROUND FETCH');
   return true;
 }
 
@@ -65,19 +71,19 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
-  // bring to foreground
+  // bring to foreground NOTIFICACIONES
   Timer.periodic(const Duration(seconds: 1), (timer) async {
     if (service is AndroidServiceInstance) {
       service.setForegroundNotificationInfo(
-        title: "My App Service",
-        content: "Updated at ${DateTime.now()}",
+        title: "Nita app",
+        content: "Actualizado en ${DateTime.now()}",
       );
     }
 
     _startListening();
 
     /// you can see this log in logcat
-    print('FLUTTER BACKGROUND SERVICE: ${DateTime.now()}');
+   // print('FLUTTER BACKGROUND SERVICE: ${DateTime.now()}');
 
     // test using external plugin
     service.invoke(
@@ -90,19 +96,46 @@ void onStart(ServiceInstance service) async {
   });
 }
 
+
+// void _initShakeListen() async {
+//   detector = ShakeDetector.waitForStart(onPhoneShake: speak);
+// }
+
+// void _startListening() async {
+//   detector?.startListening();
+// }
+
+// void _stopListening() async {
+//   detector?.stopListening();
+// }
+
+// void speak() {
+//   flutterTts.speak("detectado");
+//   _counter++;
+// }
+
+
 void _initShakeListen() async {
-  detector = ShakeDetector.waitForStart(onPhoneShake: speak);
+  acDetector = AccelerometerDetector.waitForStart(onPhoneAccelerometer: speak);
 }
 
 void _startListening() async {
-  detector?.startListening();
+  acDetector?.startListening();
+  _counter++;
 }
 
 void _stopListening() async {
-  detector?.stopListening();
+  acDetector?.stopListening();
 }
 
 void speak() {
   flutterTts.speak("movimiento detectado");
-  _counter++;
+   _counter++;
 }
+
+
+void launch() {
+  //  AppLauncher.openApp(androidApplicationId: "com.whatsapp");
+   AppLauncher.openApp(androidApplicationId: "com.example.flutter_nita");
+}
+
