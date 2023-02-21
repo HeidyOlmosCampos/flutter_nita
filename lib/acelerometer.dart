@@ -20,7 +20,7 @@ class AccelerometerDetector {
   final double AccelerometerThresholdGravity;
 
   /// Minimum time between Accelerometer
-  final int AccelerometerSlopTimeMS;
+  final int AccelerometerSlopTimeMS;  
 
   /// Time before Accelerometer count resets
   final int AccelerometerCountResetTime;
@@ -38,19 +38,19 @@ class AccelerometerDetector {
   /// This constructor waits until [startListening] is called
   AccelerometerDetector.waitForStart({
     required this.onPhoneAccelerometer,
-    this.AccelerometerThresholdGravity = 1.5,
+    this.AccelerometerThresholdGravity = 2.3,
     this.AccelerometerSlopTimeMS = 300,
     this.AccelerometerCountResetTime = 2000,
-    this.minimumAccelerometerCount = 3,
+    this.minimumAccelerometerCount = 2,
   });
 
   /// This constructor automatically calls [startListening] and starts detection and callbacks.
   AccelerometerDetector.autoStart({
     required this.onPhoneAccelerometer,
-    this.AccelerometerThresholdGravity = 1.5,
+    this.AccelerometerThresholdGravity = 2.3,
     this.AccelerometerSlopTimeMS = 300,
     this.AccelerometerCountResetTime = 2000,
-    this.minimumAccelerometerCount = 3,
+    this.minimumAccelerometerCount = 2,
   }) {
     startListening();
   }
