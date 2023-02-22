@@ -1,6 +1,5 @@
 import 'dart:async';
 
-
 import 'package:app_launcher/app_launcher.dart';
 import 'package:flutter_background_service/flutter_background_service.dart'
     show
@@ -8,7 +7,7 @@ import 'package:flutter_background_service/flutter_background_service.dart'
         FlutterBackgroundService,
         IosConfiguration,
         ServiceInstance;
-        
+
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -17,13 +16,13 @@ import 'background_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dialog_flowtter/dialog_flowtter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeService();
   runApp(const MyApp());
 }
-
 
 class MyApp extends StatefulWidget {
   const MyApp({
@@ -34,21 +33,15 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-
-
 class _MyAppState extends State<MyApp> {
-
-
   final flutterTts = FlutterTts();
   late DialogFlowtter dialogFlowtter;
   SpeechToText _speechToText = SpeechToText();
   bool _speechEnabled = false;
-
+  final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
   final TextEditingController _controller = TextEditingController();
-  
 
   String text = "Stop Service";
-
 
   @override
   void initState() {
@@ -92,26 +85,22 @@ class _MyAppState extends State<MyApp> {
               //   }
               // ),
               Expanded(
-                child: Container( 
+                child: Container(
                   width: double.infinity,
                   height: 100,
-                  alignment: Alignment.center, 
-                  child: Text(
-                    "NITA",
-                    style: TextStyle(
-                      fontSize: 100,
-                      foreground: Paint()
-                        ..style = PaintingStyle.stroke
-                        ..strokeWidth = 11
-                        ..color = const Color.fromARGB(255, 16, 26, 36),
-                    )
-                  ),
+                  alignment: Alignment.center,
+                  child: Text("NITA",
+                      style: TextStyle(
+                        fontSize: 100,
+                        foreground: Paint()
+                          ..style = PaintingStyle.stroke
+                          ..strokeWidth = 11
+                          ..color = const Color.fromARGB(255, 16, 26, 36),
+                      )),
                 ),
               ),
               const Expanded(
-                child: Image(
-                  image: AssetImage('assets/bruce.png')
-                ),
+                child: Image(image: AssetImage('assets/bruce.png')),
               ),
               Expanded(
                 child: SvgPicture.asset(
@@ -143,12 +132,11 @@ class _MyAppState extends State<MyApp> {
               // ),
               FloatingActionButton(
                 onPressed: _startListening,
-                        //_speechToText.isNotListening ? _startListening : _stopListening,
+                //_speechToText.isNotListening ? _startListening : _stopListening,
                 tooltip: 'Listen',
-                child: Icon(_speechToText.isNotListening ? Icons.mic_off : Icons.mic),
+                child: Icon(
+                    _speechToText.isNotListening ? Icons.mic_off : Icons.mic),
               ),
-
-              
             ],
           ),
         ),
@@ -156,34 +144,54 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-
-  sendMessage(String text) async { //toma el "text" y lo envia a dialogflow
+  sendMessage(String text) async {
+    //toma el "text" y lo envia a dialogflow
     if (text.isEmpty) {
       print('Message esta vacio');
     } else {
       DetectIntentResponse response = await dialogFlowtter.detectIntent(
-          queryInput: QueryInput(text: TextInput(text: text, languageCode: 'es'))
-      );//aqui devuelve la respuesta de dialogflow hacia flutter
+          queryInput: QueryInput(
+              text: TextInput(
+                  text: text,
+                  languageCode:
+                      'es'))); //aqui devuelve la respuesta de dialogflow hacia flutter
 
       if (response.message == null) return;
 
       String? action = response.queryResult!.action; //el nombre de la accion
-      String ? msg = response.text; //response.message!.text!.text![0];
+      String? msg = response.text; //response.message!.text!.text![0];
 
       _accionDialog(action!, msg!); //llama a la accion a realizar
     }
   }
 
   _accionDialog(String action, String msg) async {
+    LocationPermission permission;
+    permission = await _geolocatorPlatform.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await _geolocatorPlatform.requestPermission();
+    }
+    final position = await _geolocatorPlatform.getCurrentPosition();
+    List pm =
+        await placemarkFromCoordinates(position.latitude, position.longitude);
+    print(position);
+    print(pm);
+    print(pm[0]("Locality").toString());    
+    //print(pm[7]);
+    //print(pm[18]);
+    //print(pm[19]);
     switch (action) {
-      case 'ubicacion': _speak(msg.replaceAll('[x]', 'Los Negros Santa Cruz'));
-        
+      case 'ubicacion':
+        _speak(msg.replaceAll('[x]', 'Los Negros Santa Cruz'));
+
         break;
-      default: _speak('Podrias repetirlo por favor');
+      default:
+        _speak('Podrias repetirlo por favor');
     }
   }
 
-  void _speak(String text) { //de texto a voz
+  void _speak(String text) {
+    //de texto a voz
     flutterTts.speak(text);
   }
 
@@ -211,24 +219,9 @@ class _MyAppState extends State<MyApp> {
   /// Esta es la devolución de llamada que llama el complemento SpeechToText cuando
   /// la plataforma devuelve palabras reconocidas.
   void _onSpeechResult(SpeechRecognitionResult result) {
-    if(result.finalResult){
+    if (result.finalResult) {
       sendMessage(result.recognizedWords);
       // print(result.recognizedWords);
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
