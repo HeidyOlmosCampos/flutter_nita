@@ -1,0 +1,201 @@
+import 'dart:ui';
+import 'dart:async';
+import 'package:app_launcher/app_launcher.dart';
+import 'package:dialog_flowtter/dialog_flowtter.dart';
+import 'package:flutter/material.dart';
+
+// import 'package:flutter_sensors/flutter_sensors.dart';
+
+import 'package:flutter_background_service_android/flutter_background_service_android.dart';
+
+import 'package:flutter_background_service/flutter_background_service.dart'
+    show
+        AndroidConfiguration,
+        FlutterBackgroundService,
+        IosConfiguration,
+        ServiceInstance;
+
+import 'package:flutter_nita/acelerometer.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:shake/shake.dart';
+import 'package:speech_to_text/speech_to_text.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+
+final service = FlutterBackgroundService();
+final flutterTts = FlutterTts();
+late DialogFlowtter dialogFlowtter;
+SpeechToText _speechToText = SpeechToText();
+
+// ShakeDetector? detector;
+AccelerometerDetector? acDetector;
+
+int _counter = 0;
+
+Future initializeService() async {
+
+  _initShakeListen();
+
+  await service.configure(
+    androidConfiguration: AndroidConfiguration(// this will executed when app is in foreground or background in separated isolate
+      onStart: onStart,
+      autoStart: true,// auto start service
+      isForegroundMode: true,
+    ),
+
+    iosConfiguration: IosConfiguration(
+      autoStart: true, // auto start service
+      onForeground: onStart,// this will executed when app is in foreground in separated isolate
+      onBackground: onIosBackground,// you have to enable background fetch capability on xcode project
+    ),
+  );
+  await service.startService();
+}
+
+bool onIosBackground(ServiceInstance service) {
+  WidgetsFlutterBinding.ensureInitialized();
+  // print('FLUTTER BACKGROUND FETCH');
+  return true;
+}
+
+void onStart(ServiceInstance service) async {
+
+  DartPluginRegistrant.ensureInitialized();
+  _initShakeListen();
+
+  if (service is AndroidServiceInstance) {
+    service.on('setAsForeground').listen((event) {
+      service.setAsForegroundService();//set as foreground
+    });
+
+    service.on('setAsBackground').listen((event) async {
+      service.setAsBackgroundService(); //set as background
+    });
+  }
+
+  service.on('stopService').listen((event) {
+    service.stopSelf();
+  });
+
+  // bring to foreground NOTIFICACIONES
+  Timer.periodic(const Duration(seconds: 1), (timer) async {
+    if (service is AndroidServiceInstance) {
+      service.setForegroundNotificationInfo(
+        title: "Nita app",
+        content: "Actualizado en ${DateTime.now()}",
+      );
+    }
+
+    _startListening();
+
+    /// you can see this log in logcat
+   // print('FLUTTER BACKGROUND SERVICE: ${DateTime.now()}');
+
+    // test using external plugin
+    service.invoke(
+      'update',
+      {
+        "current_date": DateTime.now().toIso8601String(),
+        "counter": _counter,
+      },
+    );
+  });
+}
+
+
+// void _initShakeListen() async {
+//   detector = ShakeDetector.waitForStart(onPhoneShake: speak);
+// }
+
+// void _startListening() async {
+//   detector?.startListening();
+// }
+
+// void _stopListening() async {
+//   detector?.stopListening();
+// }
+
+// void speak() {
+//   flutterTts.speak("detectado");
+//   _counter++;
+// }
+
+
+void _initShakeListen() async {
+  acDetector = AccelerometerDetector.waitForStart(onPhoneAccelerometer: _hacer);
+}
+
+void _startListening() async {
+  acDetector?.startListening();
+  _counter++;
+}
+
+void _stopListening() async {
+  acDetector?.stopListening();
+}
+
+void _speak(String text) {
+  flutterTts.speak(text);
+   _counter++;
+}
+
+
+sendMessage(String text) async { //toma el "text" y lo envia a dialogflow
+  if (text.isEmpty) {
+    print('Message esta vacio');
+  } else {
+    DetectIntentResponse response = await dialogFlowtter.detectIntent(
+        queryInput: QueryInput(text: TextInput(text: text, languageCode: 'es'))
+    );//aqui devuelve la respuesta de dialogflow hacia flutter
+
+    if (response.message == null) return;
+
+    String? action = response.queryResult!.action; //el nombre de la accion
+    String ? msg = response.text; //response.message!.text!.text![0];
+
+    _accionDialog(action!, msg!); //llama a la accion a realizar
+  }
+}
+
+_accionDialog(String action, String msg) async {
+  switch (action) {
+    case 'ubicacion': _speak(msg.replaceAll('[x]', 'Los Negros Santa Cruz'));
+      
+      break;
+    default: _speak('Podrias repetirlo por favor');
+  }
+}
+
+
+/// Esto tiene que suceder solo una vez por aplicación
+void _initSpeech() async {
+  await _speechToText.initialize();
+}
+
+/// Cada vez que inicie una sesión de reconocimiento de voz
+void _startListeningSpeech() async {
+  await _speechToText.listen(onResult: _onSpeechResult);
+}
+
+/// Detener manualmente la sesión de reconocimiento de voz activa
+void _stopListeningSPeech() async {
+  await _speechToText.stop();
+}
+
+/// Esta es la devolución de palabras reconocidas.
+void _onSpeechResult(SpeechRecognitionResult result) {
+  if(result.finalResult){
+    sendMessage(result.recognizedWords);
+  }
+}
+
+void _hacer(){
+  flutterTts.speak('movimiento detectado');
+}
+
+
+void launch() {
+  //  AppLauncher.openApp(androidApplicationId: "com.whatsapp");
+   AppLauncher.openApp(androidApplicationId: "com.example.flutter_nita");
+}
+
+

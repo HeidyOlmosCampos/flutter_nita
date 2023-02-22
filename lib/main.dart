@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:app_launcher/app_launcher.dart';
+// import 'package:app_launcher/app_launcher.dart';
 import 'package:flutter_background_service/flutter_background_service.dart'
     show
         AndroidConfiguration,
@@ -10,7 +10,7 @@ import 'package:flutter_background_service/flutter_background_service.dart'
 
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
+// import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'background_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -34,10 +34,11 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+
+
   final flutterTts = FlutterTts();
   late DialogFlowtter dialogFlowtter;
   SpeechToText _speechToText = SpeechToText();
-  bool _speechEnabled = false;
   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
   final TextEditingController _controller = TextEditingController();
 
@@ -46,7 +47,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     DialogFlowtter.fromFile().then((instance) => dialogFlowtter = instance);
-    _initSpeech();
+   _initSpeech();
     super.initState();
   }
 
@@ -55,9 +56,8 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        backgroundColor: Color.fromARGB(255, 168, 146, 228),
+        backgroundColor: Color.fromARGB(255, 171, 157, 209),
         body: Center(
-          // child: Chat(),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -132,11 +132,12 @@ class _MyAppState extends State<MyApp> {
               // ),
               FloatingActionButton(
                 onPressed: _startListening,
-                //_speechToText.isNotListening ? _startListening : _stopListening,
+                        //_speechToText.isNotListening ? _startListening : _stopListening,
                 tooltip: 'Listen',
-                child: Icon(
-                    _speechToText.isNotListening ? Icons.mic_off : Icons.mic),
+                child: Icon(_speechToText.isNotListening ? Icons.mic_off : Icons.mic),
               ),
+
+              
             ],
           ),
         ),
@@ -144,82 +145,49 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  sendMessage(String text) async {
-    //toma el "text" y lo envia a dialogflow
+
+  sendMessage(String text) async { //toma el "text" y lo envia a dialogflow
     if (text.isEmpty) {
       print('Message esta vacio');
     } else {
       DetectIntentResponse response = await dialogFlowtter.detectIntent(
-          queryInput: QueryInput(
-              text: TextInput(
-                  text: text,
-                  languageCode:
-                      'es'))); //aqui devuelve la respuesta de dialogflow hacia flutter
+          queryInput: QueryInput(text: TextInput(text: text, languageCode: 'es'))
+      );//aqui devuelve la respuesta de dialogflow hacia flutter
 
       if (response.message == null) return;
 
       String? action = response.queryResult!.action; //el nombre de la accion
-      String? msg = response.text; //response.message!.text!.text![0];
+      String ? msg = response.text; //response.message!.text!.text![0];
 
       _accionDialog(action!, msg!); //llama a la accion a realizar
     }
   }
 
   _accionDialog(String action, String msg) async {
-    LocationPermission permission;
-    permission = await _geolocatorPlatform.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await _geolocatorPlatform.requestPermission();
-    }
-    final position = await _geolocatorPlatform.getCurrentPosition();
-    List pm =
-        await placemarkFromCoordinates(position.latitude, position.longitude);
-    print(position);
-    print(pm);
-    print(pm[0]("Locality").toString());    
-    //print(pm[7]);
-    //print(pm[18]);
-    //print(pm[19]);
     switch (action) {
-      case 'ubicacion':
-        _speak(msg.replaceAll('[x]', 'Los Negros Santa Cruz'));
-
+      case 'ubicacion': _speak(msg.replaceAll('[x]', 'Los Negros Santa Cruz'));
+        
         break;
-      default:
-        _speak('Podrias repetirlo por favor');
+      default: _speak('Podrias repetirlo por favor');
     }
   }
 
-  void _speak(String text) {
-    //de texto a voz
+  void _speak(String text) { //de texto a voz
     flutterTts.speak(text);
   }
 
   /// Esto tiene que suceder solo una vez por aplicación
   void _initSpeech() async {
-    _speechEnabled = await _speechToText.initialize();
+    await _speechToText.initialize();
+    // _speechEnabled = await _speechToText.initialize();
     // setState(() {});
   }
 
-  /// Cada vez que inicie una sesión de reconocimiento de voz
-  void _startListening() async {
-    await _speechToText.listen(onResult: _onSpeechResult);
-    // setState(() {});
-  }
-
-  /// Detener manualmente la sesión de reconocimiento de voz activa
-  /// Tenga en cuenta que también hay tiempos de espera que impone cada plataforma
-  /// y el complemento SpeechToText admite la configuración de tiempos de espera en el
-  /// método de escucha.
-  void _stopListening() async {
-    await _speechToText.stop();
-    // setState(() {});
-  }
 
   /// Esta es la devolución de llamada que llama el complemento SpeechToText cuando
   /// la plataforma devuelve palabras reconocidas.
   void _onSpeechResult(SpeechRecognitionResult result) {
-    if (result.finalResult) {
+    if(result.finalResult){
       sendMessage(result.recognizedWords);
       // print(result.recognizedWords);
     }
