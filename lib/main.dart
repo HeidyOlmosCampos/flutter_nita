@@ -183,7 +183,21 @@ class _MyAppState extends State<MyApp> {
     // setState(() {});
   }
 
+   /// Cada vez que inicie una sesión de reconocimiento de voz
+  void _startListening() async {
+    await _speechToText.listen(onResult: _onSpeechResult);
+    // setState(() {});
+  }
 
+  /// Detener manualmente la sesión de reconocimiento de voz activa
+  /// Tenga en cuenta que también hay tiempos de espera que impone cada plataforma
+  /// y el complemento SpeechToText admite la configuración de tiempos de espera en el
+  /// método de escucha.
+  void _stopListening() async {
+    await _speechToText.stop();
+    // setState(() {});
+  }
+  
   /// Esta es la devolución de llamada que llama el complemento SpeechToText cuando
   /// la plataforma devuelve palabras reconocidas.
   void _onSpeechResult(SpeechRecognitionResult result) {
