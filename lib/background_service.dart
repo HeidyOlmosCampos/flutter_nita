@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'dart:ui';
 import 'dart:async';
 import 'dart:convert';
 import 'package:app_launcher/app_launcher.dart';
 import 'package:dialog_flowtter/dialog_flowtter.dart';
 import 'package:flutter/material.dart';
+
+
 
 // import 'package:flutter_sensors/flutter_sensors.dart';
 
@@ -23,6 +26,21 @@ import 'package:geolocator/geolocator.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:http/http.dart' as http;
+
+
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:android_intent_plus/flag.dart';
+
+AndroidIntent intent = AndroidIntent(
+  action: 'action_view',
+  category: 'android.intent.category.LAUNCHER',
+  package: 'com.example.flutter_nita',
+);
+
+
+
+
+
 
 final service = FlutterBackgroundService();
 final flutterTts = FlutterTts();
@@ -56,7 +74,7 @@ final String User_id='18_1VwOOqNqnEaXEk';
 // final String Template_id='template_t12oyse';
 // final String User_id='Tz-1eK_bjtePLr2Tu';
 
-  
+
 
 
 int _counter = 0;
@@ -231,15 +249,24 @@ _accionDialog(String action, String msg) { //async {
 
     case 'sos': _sendEmail(msg);
       break;
+
+    case 'open': _launch(msg);
+
+      break;
+
+    case 'close': exit(0);
+      break;
       
     default: null;
   }
 }
 
 
-void launch() {
-  //  AppLauncher.openApp(androidApplicationId: "com.whatsapp");
-   AppLauncher.openApp(androidApplicationId: "com.example.flutter_nita");
+void _launch(String msg) async {
+  // await intent.launch();
+  // _speak(msg);
+    // AppLauncher.openApp(androidApplicationId: "com.whatsapp");
+  //  AppLauncher.openApp(androidApplicationId: "com.example.flutter_nita");
 }
 
 
@@ -269,8 +296,6 @@ void launch() {
     permission = await _geolocatorPlatform.requestPermission();
     }
     final position = await _geolocatorPlatform.getCurrentPosition();
-    // print(position.latitude);
-    // print(position.longitude);
 
     String name = 'Pedro Picapiedra';
     String nameContact = 'Homero Simpson';
