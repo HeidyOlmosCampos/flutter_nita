@@ -16,6 +16,7 @@ import 'package:speech_to_text/speech_to_text.dart';
 import 'background_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dialog_flowtter/dialog_flowtter.dart';
+import 'package:geolocator/geolocator.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
