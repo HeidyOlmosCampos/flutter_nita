@@ -46,15 +46,16 @@ dependencies:
   sensors_plus: ^1.4.1 #flutter_sensors: ^1.0.1
 
 
-  #dialogflow_grpc: ^0.2.9
-  #sound_stream: ^0.3.0
-  #rxdart: ^0.27.7
+  #flutter_sms: ^2.3.1
+  #mailer: ^6.0.0
+  http: ^0.13.5
 
 
   dialog_flowtter: ^0.3.3
-  google_maps_flutter: ^2.2.3
+  google_maps_flutter: ^2.2.2
   geolocator: ^9.0.2
-  alan_voice: ^3.11.0
+  #alan_voice: ^3.11.0
+  #latlng: ^0.2.0
 
 
   flutter_local_notifications: ^13.0.0

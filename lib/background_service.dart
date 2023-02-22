@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'dart:async';
+import 'dart:convert';
 import 'package:app_launcher/app_launcher.dart';
 import 'package:dialog_flowtter/dialog_flowtter.dart';
 import 'package:flutter/material.dart';
@@ -17,17 +18,18 @@ import 'package:flutter_background_service/flutter_background_service.dart'
 
 import 'package:flutter_nita/acelerometer.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:http/http.dart' as http;
 
 final service = FlutterBackgroundService();
 final flutterTts = FlutterTts();
 SpeechToText _speechToText = SpeechToText();
 AccelerometerDetector? acDetector;
 
-
-// DialogFlowtter ? dialogFlowtter;
-
+final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
 
 DialogAuthCredentials credentials = DialogAuthCredentials.fromJson({
   "type": "service_account",
@@ -44,6 +46,15 @@ DialogAuthCredentials credentials = DialogAuthCredentials.fromJson({
 DialogFlowtter dialogFlowtter = DialogFlowtter(
   credentials: credentials,
 );
+
+
+final String Service_id='service_k39j15f';
+final String Template_id='template_w1pjuzb';
+final String User_id='18_1VwOOqNqnEaXEk';
+
+// final String Service_id='service_emp11gu';
+// final String Template_id='template_t12oyse';
+// final String User_id='Tz-1eK_bjtePLr2Tu';
 
   
 
@@ -209,14 +220,16 @@ sendMessage(String text) async { //toma el "text" y lo envia a dialogflow
 
 _accionDialog(String action, String msg) { //async {
   switch (action) {
-    case 'ubicacion': _speak(msg.replaceAll('[x]', 'Los Negros Santa Cruz'));
+    case 'ubicacion': _location(msg);
       break;
 
     case 'input.welcome': _speak(msg);
       break;
 
     case 'input.unknown': _speak(msg);
-          //_startListeningSpeech();
+      break;
+
+    case 'sos': _sendEmail(msg);
       break;
       
     default: null;
@@ -228,5 +241,65 @@ void launch() {
   //  AppLauncher.openApp(androidApplicationId: "com.whatsapp");
    AppLauncher.openApp(androidApplicationId: "com.example.flutter_nita");
 }
+
+
+
+
+ void _location(String msg) async {
+    LocationPermission permission;
+    permission = await _geolocatorPlatform.checkPermission();
+    if(permission == LocationPermission.denied) {
+    permission = await _geolocatorPlatform.requestPermission();
+    }
+    final position = await _geolocatorPlatform.getCurrentPosition();
+    print(position);
+    List pm = await placemarkFromCoordinates(position.latitude, position.longitude);
+
+    Placemark place = pm[0];
+    String Address = '${place.street}, ${place.subLocality}, ${place.locality}, ${place.postalCode}, ${place.country}';
+    String _msgListo = msg.replaceAll('[x]', Address);
+    flutterTts.speak(_msgListo);
+  }
+
+
+  void _sendEmail(String msg) async{
+    LocationPermission permission;
+    permission = await _geolocatorPlatform.checkPermission();
+    if(permission == LocationPermission.denied) {
+    permission = await _geolocatorPlatform.requestPermission();
+    }
+    final position = await _geolocatorPlatform.getCurrentPosition();
+    // print(position.latitude);
+    // print(position.longitude);
+
+    String name = 'Pedro Picapiedra';
+    String nameContact = 'Homero Simpson';
+    String message = 'SOS. Mi ubicacion actual es: https://www.google.com/maps/search/?api=1&query=${position.latitude},${position.longitude}';
+    String senderEmail = 'holmoscampos@gmail.com';
+
+    
+    await http.post(Uri.parse('https://api.emailjs.com/api/v1.0/email/send'),
+      headers: {
+          'origin':'http:localhost',
+          'Content-Type':'application/json'
+      },
+      body: jsonEncode({
+        'service_id': Service_id,
+        'user_id': User_id,
+        'template_id': Template_id,
+        'template_params':{
+          'name': name,
+          'name_contact': nameContact,
+          'message': message,
+          'sender_email': senderEmail
+        }
+      })
+    );
+
+
+    String _msgListo = msg.replaceAll('[x]', nameContact);
+    flutterTts.speak(_msgListo);
+
+  }
 
 

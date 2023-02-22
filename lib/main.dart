@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 // import 'package:app_launcher/app_launcher.dart';
 import 'package:flutter_background_service/flutter_background_service.dart'
@@ -9,14 +10,21 @@ import 'package:flutter_background_service/flutter_background_service.dart'
         ServiceInstance;
 
 import 'package:flutter/material.dart';
+
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart'; 
+
 // import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'background_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dialog_flowtter/dialog_flowtter.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:http/http.dart' as http;
+
+
+
+// import 'package:flutter_sms/flutter_sms.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,15 +47,18 @@ class _MyAppState extends State<MyApp> {
   final flutterTts = FlutterTts();
   late DialogFlowtter dialogFlowtter;
   SpeechToText _speechToText = SpeechToText();
-  final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
   final TextEditingController _controller = TextEditingController();
+  final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
 
   String text = "Stop Service";
+
+
 
   @override
   void initState() {
     DialogFlowtter.fromFile().then((instance) => dialogFlowtter = instance);
-   _initSpeech();
+    _initSpeech();
+    _initLocation();
     super.initState();
   }
 
@@ -58,6 +69,8 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
         backgroundColor: Color.fromARGB(255, 171, 157, 209),
         body: Center(
+
+
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -108,34 +121,15 @@ class _MyAppState extends State<MyApp> {
                   height: 100,
                 ),
               ),
-              // Container(
-              //   padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              //   color: Colors.deepPurple,
-              //   child: Row(
-              //     children: [
-              //       Expanded(
-              //         child: TextField(
-              //           controller: _controller,
-              //           style: TextStyle(color: Colors.white),
-              //         )
-              //       ),
-              //       IconButton(
-              //           onPressed: () {
-              //           _initSpeech();
-              //              sendMessage(_controller.text);
-              //              _controller.clear();
-              //           },
-              //           icon: Icon(Icons.send)
-              //       )
-              //     ],
-              //   ),
+
+              // FloatingActionButton(
+              //   onPressed: _sendEmail,
+              //           // _sendSMS,
+              //           // _location,
+              //           //_speechToText.isNotListening ? _startListening : _stopListening,
+              //   tooltip: 'Listen',
               // ),
-              FloatingActionButton(
-                onPressed: _startListening,
-                        //_speechToText.isNotListening ? _startListening : _stopListening,
-                tooltip: 'Listen',
-                child: Icon(_speechToText.isNotListening ? Icons.mic_off : Icons.mic),
-              ),
+              
 
               
             ],
@@ -146,41 +140,47 @@ class _MyAppState extends State<MyApp> {
   }
 
 
-  sendMessage(String text) async { //toma el "text" y lo envia a dialogflow
-    if (text.isEmpty) {
-      print('Message esta vacio');
-    } else {
-      DetectIntentResponse response = await dialogFlowtter.detectIntent(
-          queryInput: QueryInput(text: TextInput(text: text, languageCode: 'es'))
-      );//aqui devuelve la respuesta de dialogflow hacia flutter
+  // void _sendEmail(){
+  //   var
+  //     Service_id='service_emp11gu',
+  //     Template_id='template_t12oyse',
+  //     User_id='Tz-1eK_bjtePLr2Tu';
+  //   var s = http.post(Uri.parse('https://api.emailjs.com/api/v1.0/email/send'),
+  //   headers: {
+  //       'origin':'http:localhost',
+  //       'Content-Type':'application/json'
+  //   },
+  //   body: jsonEncode({
+  //     'service_id': Service_id,
+  //     'user_id': User_id,
+  //     'template_id': Template_id,
+  //     'template_params':{
+  //       'name': 'Juan',
+  //       'name_contact': 'Heidy',
+  //       'message': 'SOS. Mi ubicacion actual:',
+  //       'sender_email': 'holmoscampos@gmail.com'
+  //     }
+  //   })
+  //   );
+  // }
 
-      if (response.message == null) return;
 
-      String? action = response.queryResult!.action; //el nombre de la accion
-      String ? msg = response.text; //response.message!.text!.text![0];
+  
 
-      _accionDialog(action!, msg!); //llama a la accion a realizar
-    }
-  }
 
-  _accionDialog(String action, String msg) async {
-    switch (action) {
-      case 'ubicacion': _speak(msg.replaceAll('[x]', 'Los Negros Santa Cruz'));
-        
-        break;
-      default: _speak('Podrias repetirlo por favor');
-    }
-  }
-
-  void _speak(String text) { //de texto a voz
-    flutterTts.speak(text);
-  }
 
   /// Esto tiene que suceder solo una vez por aplicación
   void _initSpeech() async {
     await _speechToText.initialize();
-    // _speechEnabled = await _speechToText.initialize();
-    // setState(() {});
+  }
+
+
+  void _initLocation() async {
+    LocationPermission permission;
+    permission = await _geolocatorPlatform.checkPermission();
+    if(permission == LocationPermission.denied) {
+    permission = await _geolocatorPlatform.requestPermission();
+    }
   }
 
    /// Cada vez que inicie una sesión de reconocimiento de voz
@@ -197,7 +197,7 @@ class _MyAppState extends State<MyApp> {
     await _speechToText.stop();
     // setState(() {});
   }
-  
+
   /// Esta es la devolución de llamada que llama el complemento SpeechToText cuando
   /// la plataforma devuelve palabras reconocidas.
   void _onSpeechResult(SpeechRecognitionResult result) {
